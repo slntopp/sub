@@ -2,6 +2,7 @@ package vtt
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	t "time"
@@ -60,4 +61,15 @@ func ParseVTTChunk(chunk string) (*VTTChunk, error) {
 		to: to,
 		text: strings.Join(data[2:], "\n"),
 	}, nil
+}
+
+func (chunk *VTTChunk) Dump() (r string) {
+	r += (strconv.Itoa(chunk.seq) + "\n")
+	r += fmt.Sprintf("%s --> %s\n", chunk.from.Format(VTT_TIME_FORMAT), chunk.to.Format(VTT_TIME_FORMAT))
+	r += chunk.text
+	return r
+}
+
+func DumpVTTChunk(chunk VTTChunk) (r string) {
+	return chunk.Dump()
 }
