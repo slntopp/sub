@@ -6,9 +6,13 @@ import (
 	"strconv"
 	"strings"
 	t "time"
+
+	"github.com/slntopp/sub/pkg/core"
 )
 
-type VTT []VTTChunk
+type VTT struct {
+	Chunks []core.Chunk
+}
 
 type VTTChunk struct {
 	seq int
@@ -34,7 +38,7 @@ func ParseVTTString(vtt string) (*VTT, error) {
 		if err != nil {
 			return nil, err
 		}
-		r = append(r, *res)
+		r.Chunks = append(r.Chunks, res)
 	}
 
 	return &r, nil
@@ -76,12 +80,28 @@ func DumpVTTChunk(chunk VTTChunk) (r string) {
 
 func (vtt *VTT) Dump() (r string) {
 	r += "WEBVTT\n\n"
-	for _, chunk := range *vtt {
-		r += chunk.Dump() + "\n\n"
+	for _, chunk := range vtt.Chunks {
+		r += chunk.(*VTTChunk).Dump() + "\n\n"
 	}
 	return r
 }
 
 func DumpVTT(vtt VTT) (r string) {
 	return vtt.Dump()
+}
+
+func (chunk *VTTChunk) Seq() int {
+	return chunk.seq
+}
+
+func (chunk *VTTChunk) From() t.Time {
+	return chunk.from
+}
+
+func (chunk *VTTChunk) To() t.Time {
+	return chunk.to
+}
+
+func (chunk *VTTChunk) Text() string {
+	return chunk.text
 }

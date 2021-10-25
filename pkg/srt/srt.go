@@ -7,10 +7,14 @@ import (
 	"strings"
 	t "time"
 
+	"github.com/slntopp/sub/pkg/core"
 	"github.com/slntopp/sub/pkg/vtt"
 )
 
-type SRT []SRTChunk
+type SRT struct {
+	Chunks []core.Chunk
+}
+
 
 type SRTChunk struct {
 	seq int
@@ -32,7 +36,7 @@ func ParseSRTString(vtt string) (*SRT, error) {
 		if err != nil {
 			return nil, err
 		}
-		r = append(r, *res)
+		r.Chunks = append(r.Chunks, res)
 	}
 
 	return &r, nil
@@ -72,13 +76,29 @@ func DumpSRTChunk(chunk SRTChunk) (r string) {
 	return chunk.Dump()
 }
 
-func (vtt *SRT) Dump() (r string) {
-	for _, chunk := range *vtt {
-		r += chunk.Dump() + "\n\n"
+func (srt *SRT) Dump() (r string) {
+	for _, chunk := range srt.Chunks {
+		r += chunk.(*SRTChunk).Dump() + "\n\n"
 	}
 	return r
 }
 
 func DumpSRT(vtt SRT) (r string) {
 	return vtt.Dump()
+}
+
+func (chunk *SRTChunk) Seq() int {
+	return chunk.seq
+}
+
+func (chunk *SRTChunk) From() t.Time {
+	return chunk.from
+}
+
+func (chunk *SRTChunk) To() t.Time {
+	return chunk.to
+}
+
+func (chunk *SRTChunk) Text() string {
+	return chunk.text
 }
