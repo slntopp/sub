@@ -16,6 +16,8 @@ type VTTChunk struct {
 	text string
 }
 
+const VTT_TIME_FORMAT = "15:04:05.000"
+
 func ParseVTTString(vtt string) (*VTT, error) {
 	r := make(VTT)
 	chunks := strings.Split(vtt, "\n\n")
@@ -44,11 +46,11 @@ func ParseVTTChunk(chunk string) (*VTTChunk, error) {
 		return nil, errors.New("Can't read Chunk sequence ID")
 	}
 	time := strings.Split(data[1], " --> ")
-	from, err := t.Parse("15:04:05.000", time[0])
+	from, err := t.Parse(VTT_TIME_FORMAT, time[0])
 	if err != nil {
 		return nil, errors.New("Can't read Chunk time 'from'")
 	}
-	to, err := t.Parse("15:04:05.000", time[1])
+	to, err := t.Parse(VTT_TIME_FORMAT, time[1])
 	if err != nil {
 		return nil, errors.New("Can't read Chunk time 'to'")
 	}
