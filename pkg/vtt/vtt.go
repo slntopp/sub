@@ -8,7 +8,7 @@ import (
 	t "time"
 )
 
-type VTT map[int]VTTChunk
+type VTT []VTTChunk
 
 type VTTChunk struct {
 	seq int
@@ -20,7 +20,7 @@ type VTTChunk struct {
 const VTT_TIME_FORMAT = "15:04:05.000"
 
 func ParseVTTString(vtt string) (*VTT, error) {
-	r := make(VTT)
+	var r VTT
 	chunks := strings.Split(vtt, "\n\n")
 	if chunks[0] != "WEBVTT" {
 		return nil, errors.New("Not a VTT format")
@@ -34,7 +34,7 @@ func ParseVTTString(vtt string) (*VTT, error) {
 		if err != nil {
 			return nil, err
 		}
-		r[res.seq] = *res
+		r = append(r, *res)
 	}
 
 	return &r, nil
@@ -72,4 +72,16 @@ func (chunk *VTTChunk) Dump() (r string) {
 
 func DumpVTTChunk(chunk VTTChunk) (r string) {
 	return chunk.Dump()
+}
+
+func (vtt *VTT) Dump() (r string) {
+	r += "WEBVTT\n\n"
+	for _, chunk := range *vtt {
+		r += chunk.Dump() + "\n\n"
+	}
+	return r
+}
+
+func DumpVTT(vtt VTT) (r string) {
+	return vtt.Dump()
 }

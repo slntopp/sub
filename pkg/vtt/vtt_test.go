@@ -70,6 +70,14 @@ func TestParseVTTString(t *testing.T) {
 	}
 }
 
+func TestDumpVTT(t *testing.T) {
+	vtt_parsed, _ := vtt.ParseVTTString(VTT_TEST_DATA)
+	r := vtt.DumpVTT(*vtt_parsed) == VTT_TEST_DATA
+	if !r {
+		t.Error("Expected parsed and dumped chunk to be equal original chunk")
+	}
+}
+
 const (
 	VTT_TEST_CHUNK = `1
 00:01:32.234 --> 00:01:34.754
