@@ -7,24 +7,87 @@ import (
 )
 
 func TestParseVTTChunk(t *testing.T) {
-	r, err := vtt.ParseVTTChunk(VTT_TEST_CHUNK)
+	_, err := vtt.ParseVTTChunk(VTT_TEST_CHUNK)
 	if err != nil {
-		t.Errorf("Expected error to be nil, got: %v", err)
+		t.Errorf("Expected error to be nil, got \"%v\" instead", err)
 	}
-	t.Log("Result", r)
+
+	_, err = vtt.ParseVTTChunk(VTT_TEST_CHUNK_ERROR_SEQ)
+	if err == nil {
+		t.Error("Expected to be error")
+	} else if err.Error() != "Can't read Chunk sequence ID" {
+		t.Errorf("Expected error to be \"Can't read Chunk sequence ID\", got \"%v\" instead", err)
+	}
+
+	_, err = vtt.ParseVTTChunk(VTT_TEST_CHUNK_ERROR_NO_SEQ)
+	if err == nil {
+		t.Error("Expected to be error")
+	} else if err.Error() != "Can't read Chunk sequence ID" {
+		t.Errorf("Expected error to be \"Can't read Chunk sequence ID\", got \"%v\" instead", err)
+	}
+
+	_, err = vtt.ParseVTTChunk(VTT_TEST_CHUNK_ERROR_TIME_FROM)
+	if err == nil {
+		t.Error("Expected to be error")
+	} else if err.Error() != "Can't read Chunk time 'from'" {
+		t.Errorf("Expected error to be \"Can't read Chunk time 'from'\", got \"%v\" instead", err)
+	}
+
+	_, err = vtt.ParseVTTChunk(VTT_TEST_CHUNK_ERROR_TIME_TO)
+	if err == nil {
+		t.Error("Expected to be error")
+	} else if err.Error() != "Can't read Chunk time 'to'" {
+		t.Errorf("Expected error to be \"Can't read Chunk time 'to'\", got \"%v\" instead", err)
+	}
+}
+
+func TestDumpVTTChunk(t *testing.T) {
+	chunk, _ := vtt.ParseVTTChunk(VTT_TEST_CHUNK)
+	r := vtt.DumpVTTChunk(*chunk) == VTT_TEST_CHUNK
+	if !r {
+		t.Error("Expected parsed and dumped chunk to be equal original chunk")
+	}
 }
 
 func TestParseVTTString(t *testing.T) {
-	r, err := vtt.ParseVTTString(VTT_TEST_DATA)
+	_, err := vtt.ParseVTTString(VTT_TEST_DATA)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got: %v", err)
 	}
-	t.Log("Result", r)
+
+	_, err = vtt.ParseVTTString(VTT_TEST_DATA_CORR_TIME_CHUNK)
+	if err == nil {
+		t.Error("Expected to be error")
+	} else if err.Error() != "Can't read Chunk time 'from'" {
+		t.Errorf("Expected error to be \"Can't read Chunk time 'from'\", got \"%v\" instead", err)
+	}
+
+	_, err = vtt.ParseVTTString(VTT_TEST_CHUNK)
+	if err == nil {
+		t.Error("Expected to be error")
+	} else if err.Error() != "Not a VTT format" {
+		t.Errorf("Expected error to be \"Not a VTT format\", got \"%v\" instead", err)
+	}
 }
 
 const (
 	VTT_TEST_CHUNK = `1
 00:01:32.234 --> 00:01:34.754
+Radio Moscow.
+Director Andreyev. What is it?`
+	VTT_TEST_CHUNK_ERROR_TIME_FROM = `1
+00:01:32,234 --> 00:01:34.754
+Radio Moscow.
+Director Andreyev. What is it?`
+	VTT_TEST_CHUNK_ERROR_TIME_TO = `1
+00:01:32.234 --> 00:01:34,754
+Radio Moscow.
+Director Andreyev. What is it?`
+	VTT_TEST_CHUNK_ERROR_SEQ = `A
+00:01:32.234 --> 00:01:34.754
+Radio Moscow.
+Director Andreyev. What is it?`
+	VTT_TEST_CHUNK_ERROR_NO_SEQ = `00:01:32.234 --> 00:01:34.754
 Radio Moscow.
 Director Andreyev. What is it?`
 
@@ -86,6 +149,19 @@ Hello? Hello?
 00:02:12.793 --> 00:02:14.992
 The Secretariat
 of the General Secretariat.
+
+`
+
+VTT_TEST_DATA_CORR_TIME_CHUNK = `WEBVTT
+
+1
+00:01:32,234 --> 00:01:34.754
+Radio Moscow.
+Director Andreyev. What is it?
+
+2
+00:01:38.114 --> 00:01:39.353
+Seventeen minutes.
 
 `
 )
