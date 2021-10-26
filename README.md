@@ -13,7 +13,8 @@ Go Packages for subtitles parsing and converting
 ### Download
 
 1. Download Binary matching to your platform from Releases page
-2. `mv sbtl-<your-os>-<your-arch> /bin/sbtl`
+2. `mv sbtl-<your-os>-<your-arch> /usr/local/bin/sbtl`
+3. `chmod +x /usr/local/bin/sbtl`
 
 ### Use
 
