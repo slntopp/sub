@@ -11,38 +11,25 @@ import (
 	"github.com/slntopp/sub/pkg/vtt"
 )
 
-type SRT struct {
-	Chunks []core.Chunk
-}
-
-
-type SRTChunk struct {
-	seq int
-	from t.Time
-	to t.Time
-	text string
-}
-
 const SRT_TIME_FORMAT = "15:04:05,000"
 
-func ParseSRTString(vtt string) (*SRT, error) {
-	var r SRT
-	chunks := strings.Split(vtt, "\n\n")
+func Parse(r *core.Subtitles, srt string) (error) {
+	chunks := strings.Split(srt, "\n\n")
 	for _, chunk := range chunks {
 		if chunk == "" {
 			continue
 		}
-	    res, err := ParseSRTChunk(chunk)
+	    res, err := ParseChunk(chunk)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		r.Chunks = append(r.Chunks, res)
+		r.Chunks = append(r.Chunks, *res)
 	}
 
-	return &r, nil
+	return nil
 }
 
-func ParseSRTChunk(chunk string) (*SRTChunk, error) {
+func ParseChunk(chunk string) (*core.Chunk, error) {
 	data := strings.Split(chunk, "\n")
 	seq, err := strconv.Atoi(data[0])
 	if err != nil {
@@ -57,48 +44,24 @@ func ParseSRTChunk(chunk string) (*SRTChunk, error) {
 	if err != nil {
 		return nil, errors.New("Can't read Chunk time 'to'")
 	}
-	return &SRTChunk{
-		seq: seq,
-		from: from,
-		to: to,
-		text: strings.Join(data[2:], "\n"),
+	return &core.Chunk{
+		Seq: seq,
+		From: from,
+		To: to,
+		Text: strings.Join(data[2:], "\n"),
 	}, nil
 }
 
-func (chunk *SRTChunk) Dump() (r string) {
-	r += (strconv.Itoa(chunk.seq) + "\n")
-	r += fmt.Sprintf("%s --> %s\n", chunk.from.Format(SRT_TIME_FORMAT), chunk.to.Format(SRT_TIME_FORMAT))
-	r += chunk.text
+func DumpChunk(chunk core.Chunk) (r string) {
+	r += (strconv.Itoa(chunk.Seq) + "\n")
+	r += fmt.Sprintf("%s --> %s\n", chunk.From.Format(SRT_TIME_FORMAT), chunk.To.Format(SRT_TIME_FORMAT))
+	r += chunk.Text
 	return r
 }
 
-func DumpSRTChunk(chunk SRTChunk) (r string) {
-	return chunk.Dump()
-}
-
-func (srt *SRT) Dump() (r string) {
+func Dump(srt *core.Subtitles) (r string) {
 	for _, chunk := range srt.Chunks {
-		r += chunk.(*SRTChunk).Dump() + "\n\n"
+		r += DumpChunk(chunk) + "\n\n"
 	}
 	return r
-}
-
-func DumpSRT(vtt SRT) (r string) {
-	return vtt.Dump()
-}
-
-func (chunk *SRTChunk) Seq() int {
-	return chunk.seq
-}
-
-func (chunk *SRTChunk) From() t.Time {
-	return chunk.from
-}
-
-func (chunk *SRTChunk) To() t.Time {
-	return chunk.to
-}
-
-func (chunk *SRTChunk) Text() string {
-	return chunk.text
 }

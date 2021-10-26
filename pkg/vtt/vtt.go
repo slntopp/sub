@@ -10,41 +10,29 @@ import (
 	"github.com/slntopp/sub/pkg/core"
 )
 
-type VTT struct {
-	Chunks []core.Chunk
-}
-
-type VTTChunk struct {
-	seq int
-	from t.Time
-	to t.Time
-	text string
-}
-
 const VTT_TIME_FORMAT = "15:04:05.000"
 
-func ParseVTTString(vtt string) (*VTT, error) {
-	var r VTT
+func Parse(r *core.Subtitles, vtt string) (error) {
 	chunks := strings.Split(vtt, "\n\n")
 	if chunks[0] != "WEBVTT" {
-		return nil, errors.New("Not a VTT format")
+		return errors.New("Not a VTT format")
 	}
 	chunks = chunks[1:]
 	for _, chunk := range chunks {
 		if chunk == "" {
 			continue
 		}
-	    res, err := ParseVTTChunk(chunk)
+	    res, err := ParseChunk(chunk)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		r.Chunks = append(r.Chunks, res)
+		r.Chunks = append(r.Chunks, *res)
 	}
 
-	return &r, nil
+	return nil
 }
 
-func ParseVTTChunk(chunk string) (*VTTChunk, error) {
+func ParseChunk(chunk string) (*core.Chunk, error) {
 	data := strings.Split(chunk, "\n")
 	seq, err := strconv.Atoi(data[0])
 	if err != nil {
@@ -59,49 +47,26 @@ func ParseVTTChunk(chunk string) (*VTTChunk, error) {
 	if err != nil {
 		return nil, errors.New("Can't read Chunk time 'to'")
 	}
-	return &VTTChunk{
-		seq: seq,
-		from: from,
-		to: to,
-		text: strings.Join(data[2:], "\n"),
+	return &core.Chunk{
+		Seq: seq,
+		From: from,
+		To: to,
+		Text: strings.Join(data[2:], "\n"),
 	}, nil
 }
 
-func (chunk *VTTChunk) Dump() (r string) {
-	r += (strconv.Itoa(chunk.seq) + "\n")
-	r += fmt.Sprintf("%s --> %s\n", chunk.from.Format(VTT_TIME_FORMAT), chunk.to.Format(VTT_TIME_FORMAT))
-	r += chunk.text
+
+func DumpChunk(chunk core.Chunk) (r string) {
+	r += (strconv.Itoa(chunk.Seq) + "\n")
+	r += fmt.Sprintf("%s --> %s\n", chunk.From.Format(VTT_TIME_FORMAT), chunk.To.Format(VTT_TIME_FORMAT))
+	r += chunk.Text
 	return r
 }
 
-func DumpVTTChunk(chunk VTTChunk) (r string) {
-	return chunk.Dump()
-}
-
-func (vtt *VTT) Dump() (r string) {
+func Dump(vtt *core.Subtitles) (r string) {
 	r += "WEBVTT\n\n"
 	for _, chunk := range vtt.Chunks {
-		r += chunk.(*VTTChunk).Dump() + "\n\n"
+		r += DumpChunk(chunk) + "\n\n"
 	}
 	return r
-}
-
-func DumpVTT(vtt VTT) (r string) {
-	return vtt.Dump()
-}
-
-func (chunk *VTTChunk) Seq() int {
-	return chunk.seq
-}
-
-func (chunk *VTTChunk) From() t.Time {
-	return chunk.from
-}
-
-func (chunk *VTTChunk) To() t.Time {
-	return chunk.to
-}
-
-func (chunk *VTTChunk) Text() string {
-	return chunk.text
 }
