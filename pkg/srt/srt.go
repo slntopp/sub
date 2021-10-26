@@ -11,8 +11,10 @@ import (
 	"github.com/slntopp/sub/pkg/vtt"
 )
 
+// Format used by SRT 'timestamps'
 const SRT_TIME_FORMAT = "15:04:05,000"
 
+// Parses string as SRT and stores into Subtitles
 func Parse(r *core.Subtitles, srt string) (error) {
 	chunks := strings.Split(srt, "\n\n")
 	for _, chunk := range chunks {
@@ -29,6 +31,7 @@ func Parse(r *core.Subtitles, srt string) (error) {
 	return nil
 }
 
+// Parses single SRT Chunk
 func ParseChunk(chunk string) (*core.Chunk, error) {
 	data := strings.Split(chunk, "\n")
 	seq, err := strconv.Atoi(data[0])
@@ -52,6 +55,7 @@ func ParseChunk(chunk string) (*core.Chunk, error) {
 	}, nil
 }
 
+// Dumps single SRT Chunk
 func DumpChunk(chunk core.Chunk) (r string) {
 	r += (strconv.Itoa(chunk.Seq) + "\n")
 	r += fmt.Sprintf("%s --> %s\n", chunk.From.Format(SRT_TIME_FORMAT), chunk.To.Format(SRT_TIME_FORMAT))
@@ -59,6 +63,7 @@ func DumpChunk(chunk core.Chunk) (r string) {
 	return r
 }
 
+// Dumps Subtitles into SRT string
 func Dump(srt *core.Subtitles) (r string) {
 	for _, chunk := range srt.Chunks {
 		r += DumpChunk(chunk) + "\n\n"

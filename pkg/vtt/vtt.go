@@ -10,8 +10,10 @@ import (
 	"github.com/slntopp/sub/pkg/core"
 )
 
+// Format used by VTT 'timestamps'
 const VTT_TIME_FORMAT = "15:04:05.000"
 
+// Parses string as VTT and stores into Subtitles
 func Parse(r *core.Subtitles, vtt string) (error) {
 	chunks := strings.Split(vtt, "\n\n")
 	if chunks[0] != "WEBVTT" {
@@ -32,6 +34,7 @@ func Parse(r *core.Subtitles, vtt string) (error) {
 	return nil
 }
 
+// Parses single VTT Chunk
 func ParseChunk(chunk string) (*core.Chunk, error) {
 	data := strings.Split(chunk, "\n")
 	seq, err := strconv.Atoi(data[0])
@@ -55,7 +58,7 @@ func ParseChunk(chunk string) (*core.Chunk, error) {
 	}, nil
 }
 
-
+// Dumps single VTT Chunk
 func DumpChunk(chunk core.Chunk) (r string) {
 	r += (strconv.Itoa(chunk.Seq) + "\n")
 	r += fmt.Sprintf("%s --> %s\n", chunk.From.Format(VTT_TIME_FORMAT), chunk.To.Format(VTT_TIME_FORMAT))
@@ -63,6 +66,7 @@ func DumpChunk(chunk core.Chunk) (r string) {
 	return r
 }
 
+// Dumps Subtitles into VTT string
 func Dump(vtt *core.Subtitles) (r string) {
 	r += "WEBVTT\n\n"
 	for _, chunk := range vtt.Chunks {
