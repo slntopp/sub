@@ -37,13 +37,8 @@ var TYPES = map[string]bool {
 // convCmd represents the conv command
 var convCmd = &cobra.Command{
 	Use:   "conv",
-	Short: "Convert subtitles file",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Convert Subtitles between formats",
+	Long: ``,
 	Args: func(cmd *cobra.Command, args []string) (error) {
 		if len(args) < 2 {
 			return errors.New("Not enough arguments given")
