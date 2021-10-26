@@ -3,37 +3,38 @@ package vtt_test
 import (
 	"testing"
 
+	"github.com/slntopp/sub/pkg/core"
 	"github.com/slntopp/sub/pkg/vtt"
 )
 
-func TestParseVTTChunk(t *testing.T) {
-	_, err := vtt.ParseVTTChunk(VTT_TEST_CHUNK)
+func TestParseChunk(t *testing.T) {
+	_, err := vtt.ParseChunk(VTT_TEST_CHUNK)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got \"%v\" instead", err)
 	}
 
-	_, err = vtt.ParseVTTChunk(VTT_TEST_CHUNK_ERROR_SEQ)
+	_, err = vtt.ParseChunk(VTT_TEST_CHUNK_ERROR_SEQ)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Can't read Chunk sequence ID" {
 		t.Errorf("Expected error to be \"Can't read Chunk sequence ID\", got \"%v\" instead", err)
 	}
 
-	_, err = vtt.ParseVTTChunk(VTT_TEST_CHUNK_ERROR_NO_SEQ)
+	_, err = vtt.ParseChunk(VTT_TEST_CHUNK_ERROR_NO_SEQ)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Can't read Chunk sequence ID" {
 		t.Errorf("Expected error to be \"Can't read Chunk sequence ID\", got \"%v\" instead", err)
 	}
 
-	_, err = vtt.ParseVTTChunk(VTT_TEST_CHUNK_ERROR_TIME_FROM)
+	_, err = vtt.ParseChunk(VTT_TEST_CHUNK_ERROR_TIME_FROM)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Can't read Chunk time 'from'" {
 		t.Errorf("Expected error to be \"Can't read Chunk time 'from'\", got \"%v\" instead", err)
 	}
 
-	_, err = vtt.ParseVTTChunk(VTT_TEST_CHUNK_ERROR_TIME_TO)
+	_, err = vtt.ParseChunk(VTT_TEST_CHUNK_ERROR_TIME_TO)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Can't read Chunk time 'to'" {
@@ -42,27 +43,28 @@ func TestParseVTTChunk(t *testing.T) {
 }
 
 func TestDumpVTTChunk(t *testing.T) {
-	chunk, _ := vtt.ParseVTTChunk(VTT_TEST_CHUNK)
-	r := vtt.DumpVTTChunk(*chunk) == VTT_TEST_CHUNK
+	chunk, _ := vtt.ParseChunk(VTT_TEST_CHUNK)
+	r := vtt.DumpChunk(*chunk) == VTT_TEST_CHUNK
 	if !r {
 		t.Error("Expected parsed and dumped chunk to be equal original chunk")
 	}
 }
 
-func TestParseVTTString(t *testing.T) {
-	_, err := vtt.ParseVTTString(VTT_TEST_DATA)
+func TestParse(t *testing.T) {
+	var r core.Subtitles
+	err := vtt.Parse(&r, VTT_TEST_DATA)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got: %v", err)
 	}
 
-	_, err = vtt.ParseVTTString(VTT_TEST_DATA_CORR_TIME_CHUNK)
+	err = vtt.Parse(&r, VTT_TEST_DATA_CORR_TIME_CHUNK)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Can't read Chunk time 'from'" {
 		t.Errorf("Expected error to be \"Can't read Chunk time 'from'\", got \"%v\" instead", err)
 	}
 
-	_, err = vtt.ParseVTTString(VTT_TEST_CHUNK)
+	err = vtt.Parse(&r, VTT_TEST_CHUNK)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Not a VTT format" {
@@ -71,8 +73,9 @@ func TestParseVTTString(t *testing.T) {
 }
 
 func TestDumpVTT(t *testing.T) {
-	vtt_parsed, _ := vtt.ParseVTTString(VTT_TEST_DATA)
-	r := vtt.DumpVTT(*vtt_parsed) == VTT_TEST_DATA
+	var s core.Subtitles
+	vtt.Parse(&s, VTT_TEST_DATA)
+	r := vtt.Dump(&s) == VTT_TEST_DATA
 	if !r {
 		t.Error("Expected parsed and dumped chunk to be equal original chunk")
 	}

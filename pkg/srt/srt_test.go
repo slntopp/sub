@@ -3,18 +3,19 @@ package srt_test
 import (
 	"testing"
 
+	"github.com/slntopp/sub/pkg/core"
 	"github.com/slntopp/sub/pkg/srt"
 )
 
-func TestParseSRTChunk(t *testing.T) {
+func TestParseChunk(t *testing.T) {
 	t.Log("Testing correct chunk")
-	_, err := srt.ParseSRTChunk(SRT_TEST_CHUNK)
+	_, err := srt.ParseChunk(SRT_TEST_CHUNK)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got \"%v\" instead", err)
 	}
 
 	t.Log("Testing chunk with wrong sequence number")
-	_, err = srt.ParseSRTChunk(SRT_TEST_CHUNK_ERROR_SEQ)
+	_, err = srt.ParseChunk(SRT_TEST_CHUNK_ERROR_SEQ)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Can't read Chunk sequence ID" {
@@ -22,7 +23,7 @@ func TestParseSRTChunk(t *testing.T) {
 	}
 
 	t.Log("Testing chunk with absent sequence number")
-	_, err = srt.ParseSRTChunk(SRT_TEST_CHUNK_ERROR_NO_SEQ)
+	_, err = srt.ParseChunk(SRT_TEST_CHUNK_ERROR_NO_SEQ)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Can't read Chunk sequence ID" {
@@ -30,28 +31,30 @@ func TestParseSRTChunk(t *testing.T) {
 	}
 }
 
-func TestDumpSRTChunk(t *testing.T) {
-	chunk, _ := srt.ParseSRTChunk(SRT_TEST_CHUNK)
-	r := srt.DumpSRTChunk(*chunk) == SRT_TEST_CHUNK
+func TestDumpChunk(t *testing.T) {
+	chunk, _ := srt.ParseChunk(SRT_TEST_CHUNK)
+	r := srt.DumpChunk(*chunk) == SRT_TEST_CHUNK
 	if !r {
 		t.Error("Expected parsed and dumped chunk to be equal original chunk")
+		t.Logf("Result:\n------\n%s\n------\nExpected:\n------\n%s\n------", srt.DumpChunk(*chunk), SRT_TEST_CHUNK)
 	}
 }
 
 func TestParseSRTString(t *testing.T) {
-	_, err := srt.ParseSRTString(SRT_TEST_DATA)
+	var r core.Subtitles
+	err := srt.Parse(&r, SRT_TEST_DATA)
 	if err != nil {
 		t.Errorf("Expected error to be nil, got: %v", err)
 	}
 
-	_, err = srt.ParseSRTString(SRT_TEST_DATA_CORR_TIME_CHUNK)
+	err = srt.Parse(&r, SRT_TEST_DATA_CORR_TIME_CHUNK)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Can't read Chunk time 'from'" {
 		t.Errorf("Expected error to be \"Can't read Chunk time 'from'\", got \"%v\" instead", err)
 	}
 
-	_, err = srt.ParseSRTString(SRT_TEST_CHUNK)
+	err = srt.Parse(&r, SRT_TEST_CHUNK)
 	if err == nil {
 		t.Error("Expected to be error")
 	} else if err.Error() != "Not a SRT format" {
@@ -60,8 +63,9 @@ func TestParseSRTString(t *testing.T) {
 }
 
 func TestDumpSRT(t *testing.T) {
-	srt_parsed, _ := srt.ParseSRTString(SRT_TEST_DATA)
-	r := srt.DumpSRT(*srt_parsed) == SRT_TEST_DATA
+	var s core.Subtitles
+	srt.Parse(&s, SRT_TEST_DATA)
+	r := srt.Dump(&s) == SRT_TEST_DATA
 	if !r {
 		t.Error("Expected parsed and dumped chunk to be equal original chunk")
 	}
